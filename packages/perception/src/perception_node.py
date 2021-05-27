@@ -24,7 +24,7 @@ class PerceptionNode(DTROS):
 
 
         # Get vehicle name
-        self.veh_name = rospy.get_namespace().strip("/")
+        self.veh = rospy.get_namespace().strip("/")
 
         camera_topic = f'/{self.veh}/camera_node/image/compressed'
         self.camera_feed_sub = rospy.Subscriber(
