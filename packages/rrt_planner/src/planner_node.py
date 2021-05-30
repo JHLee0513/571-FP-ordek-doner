@@ -18,4 +18,18 @@ class PlannerNode(DTROS):
         )
 
         # Get vehicle name
+
+        # Get perception node for goal pose prediction
+        # Get perception node for curr pose prediction
         
+    
+    def plan(self):
+        pass
+
+    def run(self):
+        # have goal image publishing running
+        # get preidcted pose from network
+        # plan
+        # run plan
+        # Base on some criterion replan.
+        return NotImplementedError()

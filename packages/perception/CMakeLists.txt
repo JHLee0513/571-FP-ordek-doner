@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   duckietown_msgs
   std_msgs
   sensor_msgs
+  message_generation
 )
 
 catkin_package()
@@ -13,4 +14,14 @@ catkin_package()
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+)
+
+add_message_files(
+  FILES
+  PredictedPose.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
