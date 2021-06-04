@@ -55,7 +55,7 @@ class PerceptionNode():
         # get prediction model
         self.model = LocalizationModel()
         rospack = rospkg.RosPack()
-        model_path = os.path.join(rospack.get_path('perception'), "model_aug1.pth")
+        model_path = os.path.join(rospack.get_path('perception'), "files/model_aug1.pth")
         self.model.load_state_dict(torch.load(model_path))
 
         # preprocessing, hardcode invariant
