@@ -7,7 +7,7 @@ ARG ICON="cube"
 
 # ==================================================>
 # ==> Do not change the code below this line
-ARG ARCH=arm32v7
+ARG ARCH=arm64v8
 ARG DISTRO=daffy
 ARG BASE_TAG=${DISTRO}-${ARCH}
 ARG BASE_IMAGE=dt-ros-commons
@@ -82,3 +82,43 @@ LABEL org.duckietown.label.module.type="${REPO_NAME}" \
     org.duckietown.label.maintainer="${MAINTAINER}"
 # <== Do not change the code above this line
 # <==================================================
+
+
+# Pytorch setup
+RUN pip3 install torch
+RUN pip3 install torchvision
+
+#! add cuda to path
+# ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
+# ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+# #! nvidia-container-runtime
+# # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html
+# ENV NVIDIA_VISIBLE_DEVICES all
+# ENV NVIDIA_DRIVER_CAPABILITIES all
+# # TODO: Fix requreiment to elimitate old GPU to run the dt-ml image
+# #ENV NVIDIA_REQUIRE_ARCH "maxwell pascal volta turing ampere"
+# #ENV NVIDIA_REQUIRE_CUDA "cuda>=10.2"
+
+# #! VERSIONING CONFIGURATION
+# # this is mainly for AMD64 as on Jetson it comes with the image
+# ENV CUDA_VERSION 10.2.89
+# ENV CUDA_PKG_VERSION 10-2=$CUDA_VERSION-1
+# ENV NCCL_VERSION 2.8.4
+# ENV CUDNN_VERSION 8.1.1.33
+
+# ENV PYTORCH_VERSION 1.7.0
+# ENV PYTORCHVISION_VERSION 0.8.0a0+2f40a48
+
+# ENV TENSORRT_VERSION 7.1.3.4
+
+# ENV PYCUDA_VERSION 2021.1
+
+# #! Symbolic Link:
+# RUN ln -s /usr/local/cuda-10.2 /usr/local/cuda
+
+# #! install ML Related Stuff
+# COPY assets/${ARCH} "${REPO_PATH}/install"
+# RUN chmod +x "${REPO_PATH}/install/install.sh"
+# RUN "${REPO_PATH}/install/install.sh"
+

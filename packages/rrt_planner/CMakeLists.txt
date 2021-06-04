@@ -8,9 +8,12 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
-catkin_package()
 
 include_directories(
 # include
+  environments
   ${catkin_INCLUDE_DIRS}
 )
+
+catkin_python_setup()
+catkin_package()
