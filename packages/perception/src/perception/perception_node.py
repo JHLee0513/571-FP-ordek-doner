@@ -60,7 +60,7 @@ class PerceptionNode():
 
         # preprocessing, hardcode invariant
         self.size = (128, 128)
-        self.transform = transforms.compose([
+        self.transform = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize(self.size),
             transforms.ToTensor()

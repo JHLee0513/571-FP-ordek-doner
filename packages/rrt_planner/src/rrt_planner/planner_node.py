@@ -12,6 +12,7 @@ import rospy
 from duckietown.dtros import DTROS, NodeType
 import numpy as np
 import matplotlib.pyplot as plt
+from perception.msg import PredictedPose
 
 class PlannerNode(DTROS):
     """
@@ -32,7 +33,7 @@ class PlannerNode(DTROS):
         self.goal_pose_node = PerceptionNode('goal_classifier', camera_topic=f'/{self.veh}/camera_node/image_goal/compressed')
 
         # Get perception node for curr pose prediction
-        self.curr_pose_node = PerceptionNode('curr_classifier')
+        self.curr_pose_node = PerceptionNode('curr_classifier', camera_topic=f'/{self.veh}/camera_node/image_start/compressed')
 
         # pose handling
         self.goal_sub = rospy.Subscriber(
