@@ -1,5 +1,5 @@
 # parameters
-ARG REPO_NAME="dt-machine-learning-base-environment"
+ARG REPO_NAME="571-FP-ordek-doner"
 ARG DESCRIPTION="Base image containing common libraries and environment setup for Machine Learning applications."
 ARG MAINTAINER="Andrea F. Daniele (afdaniele@ttic.edu)"
 # pick an icon from: https://fontawesome.com/v4.7.0/icons/
