@@ -25,6 +25,7 @@ class PerceptionNode():
             # node_name = node_name,
             # node_type = NodeType.PERCEPTION
         # )
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.node_name = node_name
         # Get vehicle name
         self.veh = rospy.get_namespace().strip("/")
@@ -56,7 +57,7 @@ class PerceptionNode():
         self.model = LocalizationModel()
         rospack = rospkg.RosPack()
         model_path = os.path.join(rospack.get_path('perception'), "files/model_aug1.pth")
-        self.model.load_state_dict(torch.load(model_path))
+        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
 
         # preprocessing, hardcode invariant
         self.size = (128, 128)
