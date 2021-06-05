@@ -55,6 +55,7 @@ class CarEnvironment(EnvironmentBase):
         if self.rng.random() > 0.5:
             linear_vel = -1 * linear_vel
         steer_angle = (2 * self.rng.random() - 1) * self.max_steer_angle  # uniformly distributed
+        # print(linear_vel, steer_angle)
         return linear_vel, steer_angle
 
     def simulate_car(self, x_near, x_rand, linear_vel, steer_angle):

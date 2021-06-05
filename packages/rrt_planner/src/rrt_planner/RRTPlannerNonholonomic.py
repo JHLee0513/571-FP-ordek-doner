@@ -24,13 +24,14 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
             max_iter=max_iter,
             seed=seed)
         self.num_control_samples = num_control_samples  # Number of controls to sample
+        self.control_tree = {}
 
     def plan(
             self,
             start_config: np.ndarray,
             goal_config: np.ndarray) -> PlanResult:
         # TODO: YOUR IMPLEMENTATION HERE
-
+        self.control_tree[0] = (-1, (0,0))
         plan_time = time.time()
 
         # Start with adding the start configuration to the tree.
@@ -39,13 +40,14 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
         for i in range(self.max_iter):
             q_rand = self.sample(goal_config)                
             qid, q_near = self.nearestVertex(q_rand)
-            q_new, q_new_cost = self.extend(q_near, q_rand)
+            q_new, q_new_cost, control = self.extend(q_near, q_rand)
             if (self.env.state_validity_checker(q_new) and
                 self.env.edge_validity_checker(q_near, q_new)):
                 k += 1
                 self.tree.AddVertex(q_new,  cost = self.tree.costs[qid] + q_new_cost)
                 self.tree.AddEdge(qid,k)
-
+                self.control_tree[k] = (int(qid), control)
+                print(control)
                 if (self.env.goal_criterion(q_new, goal_config)):
                     break
                 
@@ -57,18 +59,28 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
         start, _ = self.nearestVertex(goal_config)
         cost = costs[start]
         while (start != 0):
-            plan.append(vertices[start])
+            # plan.append(vertices[start])
+            if start in self.control_tree.keys():
+                # print(self.control_tree[start].shape)
+                plan.append(self.control_tree[start])
             start = edges[start]
-        plan.append(start_config)
+        plan.append((start_config, (0, 0)))
         plan = plan[::-1]
         plan_time = time.time() - plan_time
         print("Cost: %f" % cost)
         print("Planning Time: %fs" % plan_time)
+        # print(plan)
 
-        return PlanResult(
-            plan=np.concatenate(plan, axis=1),
+        plan_result = PlanResult(
+            plan=plan,
             cost=cost,
             time=plan_time)
+        return plan_result
+        # print(plan_result)
+        # return PlanResult(
+            # plan=np.concatenate(plan, axis=2),
+            # cost=cost,
+            # time=plan_time)
 
     def extend(
             self,
@@ -101,7 +113,7 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
                     min_cost = cost
 
 
-        return x_chosen, min_cost
+        return x_chosen, min_cost, (linear_vel, steer_angle)
 
     def nearestVertex(self, config):
         vertices = np.squeeze(np.array(self.tree.vertices), axis=-1).T

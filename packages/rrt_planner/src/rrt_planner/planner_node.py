@@ -8,6 +8,7 @@ import os
 from rrt_planner.environments.CarEnvironment import CarEnvironment
 from rrt_planner.RRTPlannerNonholonomic import RRTPlannerNonholonomic
 from perception.perception_node import PerceptionNode
+from duckietown_msgs.msg import Twist2DStamped
 import rospy
 from duckietown.dtros import DTROS, NodeType
 import numpy as np
@@ -49,12 +50,18 @@ class PlannerNode(DTROS):
             queue_size=1
         )
 
+        self.control_pub = rospy.Publisher(
+            f'{self.veh}/control', 
+            Twist2DStamped,
+            queue_size=1
+        )
+
         # Planning variables
         self.planning_env = None
         self.planner = None
         self.planned_trajectory = None
-        self.goalpose = (30,30,0)
-        self.currpose = (30, 298, 0.273915)
+        self.goalpose = (0,0,0)
+        self.currpose = (90, 298, 0.273915)
         self.seed = 2021
 
         rospack = rospkg.RosPack()
@@ -85,14 +92,28 @@ class PlannerNode(DTROS):
         tree = self.planner.tree
         # For debugging only
         # self.planning_env.visualize_plan(plan_result.plan, tree, visited)
+        self.run_plan(plan_result)
 
 
-    def run(self):
+    def run_plan(self, plan_result):
         # have goal image publishing running
         # get preidcted pose from network
         # plan
         # run plan
         # Base on some criterion replan.
+
+        plan_states = plan_result.plan
+        for action in plan_states:
+            linear = int(action[1])
+            angular = int(action[2])
+            msg = Twist2DStamped()
+            msg.v = linear
+            msg.omega = angular
+            self.control_pub.publish(msg)
+            print("published control! %f, %f" % (linear, angular))
+        # print(plan_states)
+        # self.num_states = num_states
+
 
         # send motor signals along the plan
         # after moving for x seconds, check current pose for deviation
