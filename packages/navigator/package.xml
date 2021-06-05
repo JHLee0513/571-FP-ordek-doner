@@ -1,0 +1,11 @@
+<package>
+  <name>navigator</name>
+  <version>0.1.0</version>
+  <description>
+  This is a package written for the CSE571 final project, which published the appropriate commands for navigating the robot
+  </description>
+  <maintainer email="ardier@cs.washington.edu">Ardi Madadi</maintainer>
+  <license>None</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+</package>
