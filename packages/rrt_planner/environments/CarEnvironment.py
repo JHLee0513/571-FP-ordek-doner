@@ -203,7 +203,7 @@ class CarEnvironment(EnvironmentBase):
         """
         valid_position = ~self.collision_violation(config)
         valid_limits = ~self.out_of_limits_violation(config)
-
+        # print(valid_position, valid_limits)
         return valid_position and valid_limits
 
     def plot_car(
@@ -261,3 +261,4 @@ class CarEnvironment(EnvironmentBase):
 
         self.fig.canvas.draw()
         plt.pause(1e-10)
+        # plt.pause(60)

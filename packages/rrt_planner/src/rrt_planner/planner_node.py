@@ -13,6 +13,7 @@ from duckietown.dtros import DTROS, NodeType
 import numpy as np
 import matplotlib.pyplot as plt
 from perception.msg import PredictedPose
+import rospkg
 
 class PlannerNode(DTROS):
     """
@@ -28,12 +29,11 @@ class PlannerNode(DTROS):
 
         # Get vehicle name
         self.veh = rospy.get_namespace().strip("/")
-
         # Get perception node for goal pose prediction
-        self.goal_pose_node = PerceptionNode('goal_classifier', camera_topic=f'/{self.veh}/camera_node/image_goal/compressed')
+        self.goal_pose_node = PerceptionNode('goal_classifier', camera_topic=f'/{self.veh}/goal_state_publisher/image_goal/compressed')
 
         # Get perception node for curr pose prediction
-        self.curr_pose_node = PerceptionNode('curr_classifier', camera_topic=f'/{self.veh}/camera_node/image_start/compressed')
+        self.curr_pose_node = PerceptionNode('curr_classifier', camera_topic=f'/{self.veh}/start_state_publisher/image_goal/compressed')
 
         # pose handling
         self.goal_sub = rospy.Subscriber(
@@ -53,29 +53,38 @@ class PlannerNode(DTROS):
         self.planning_env = None
         self.planner = None
         self.planned_trajectory = None
-        self.goalpose = (0,0,0)
-        self.currpose = (0,0,0)
+        self.goalpose = (30,30,0)
+        self.currpose = (30, 298, 0.273915)
         self.seed = 2021
+
+        rospack = rospkg.RosPack()
+        self.map_path = os.path.join(rospack.get_path('rrt_planner'),"environments/mapfile.pgm")
 
     
     def updatePose(self, pose):
         self.currpose = (pose.x, pose.y, pose.theta)
 
-    def plan(self):
-        self.planning_env = CarEnvironment("../environments/mapfile.pgm", self.currpose, self.goalpose, self.seed)
+    def plan(self, msg):
+        self.goalpose = (msg.x, msg.y, msg.theta)
+        start = np.asarray(self.currpose).reshape((3,1))
+        goal = np.asarray(self.goalpose).reshape((3,1))
+
+        print("Goal received. Planning with start (%f, %f, %f) and goal (%f, %f, %f)" % (start[0,0], start[1,0], start[2,0], goal[0,0], goal[1,0], goal[2,0]))
+
+        self.planning_env = CarEnvironment(self.map_path, start, goal, self.seed)
         self.planner = RRTPlannerNonholonomic(self.planning_env, seed=self.seed, bias=0.2)
 
         self.planning_env.init_visualizer()
 
         # Plan
-        plan_result = self.planner.plan(np.asarray(self.currpose), np.asarray(self.goalpose))
+        plan_result = self.planner.plan(start, goal)
 
         # Visualize the final path
         tree = None
         visited = None
         tree = self.planner.tree
-        self.planning_env.visualize_plan(plan_result.plan, tree, visited)
-        plt.show()
+        # For debugging only
+        # self.planning_env.visualize_plan(plan_result.plan, tree, visited)
 
 
     def run(self):
@@ -94,6 +103,6 @@ class PlannerNode(DTROS):
 if __name__ == '__main__':
     # Initialize the node
     sensor_fusion_node = PlannerNode(node_name='sensor_fusion_node')
-    sensor_fusion_node.run()
+    # sensor_fusion_node.run()
     # Keep it spinning to keep the node alive
     rospy.spin()

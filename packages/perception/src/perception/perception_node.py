@@ -5,6 +5,7 @@ from torchvision import transforms
 from perception.network import LocalizationModel
 import numpy as np
 from cv_bridge import CvBridge
+import cv2
 
 import os
 import rospy
@@ -35,7 +36,24 @@ class PerceptionNode():
             self.input_topic = f'/{self.veh}/camera_node/image/compressed'
         else:
             self.input_topic = camera_topic
-        
+        self.x_voxel = 1.89/366
+        self.y_voxel = 1.26/246
+        self.bridge = CvBridge()
+
+        # get prediction model
+        self.model = LocalizationModel().to(self.device)
+        rospack = rospkg.RosPack()
+        model_path = os.path.join(rospack.get_path('perception'), "files/model_aug1.pth")
+        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
+
+        # preprocessing, hardcode invariant
+        self.size = (128, 128)
+        self.transform = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize(self.size),
+            transforms.ToTensor()
+        ])
+
         #Publisher to publish predicted pose
         self.pub = rospy.Publisher(
             f'/{self.veh}/{self.node_name}/perception/PredictedPose',
@@ -51,22 +69,6 @@ class PerceptionNode():
             buff_size=2**24
         )
 
-        self.bridge = CvBridge()
-
-        # get prediction model
-        self.model = LocalizationModel()
-        rospack = rospkg.RosPack()
-        model_path = os.path.join(rospack.get_path('perception'), "files/model_aug1.pth")
-        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
-
-        # preprocessing, hardcode invariant
-        self.size = (128, 128)
-        self.transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.Resize(self.size),
-            transforms.ToTensor()
-        ])
-
     def model_callback(self, img_msg):
         """
         This function processes received input image to predict (x,y, theta)
@@ -81,17 +83,20 @@ class PerceptionNode():
             return angle
         rate = rospy.Rate(1) # 1Hz
         # decompress img msg
-        cv_image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='passthrough')
+        # cv_image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='passthrough')
+        np_arr = np.fromstring(img_msg.data, np.uint8)
+        cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         # transform img to model input
         input = self.transform(cv_image)
+        input = input.to(self.device).unsqueeze(0)
         # run model
-        predicted_pose = self.model(input)
+        predicted_pose = self.model(input)[0]
         predicted_pose[2] = normalize_angle(predicted_pose[2])
         # publish output
 
         message = PredictedPose()
-        message.x = predicted_pose[0]
-        message.t = predicted_pose[1]
+        message.x = torch.round(predicted_pose[1] / self.x_voxel)
+        message.y = torch.round(predicted_pose[0] / self.y_voxel)
         message.theta = predicted_pose[2]
         
         self.pub.publish(message)

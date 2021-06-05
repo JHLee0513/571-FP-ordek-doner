@@ -25,7 +25,8 @@ class EnvironmentBase:
         # Obtain the boundary limits
         # Check if file exists
         # self.map = np.loadtxt(map_file)
-        self.map = np.asarray(Image.open(map_file))
+        self.map = 1 - np.asarray(Image.open(map_file)) / 254
+        # print(self.map.max())
         self.xlimit = [0, np.shape(self.map)[0] - 1]
         self.ylimit = [0, np.shape(self.map)[1] - 1]
 
