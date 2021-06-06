@@ -227,6 +227,7 @@ class KinematicsNode(DTROS):
         return EmptyResponse()
 
     def car_cmd_callback(self, msg_car_cmd):
+        print("in callback")
         """
         A callback that reposponds to received `car_cmd` messages by calculating the
         corresponding wheel commands, taking into account the robot geometry, gain and trim
