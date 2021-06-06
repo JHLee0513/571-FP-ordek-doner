@@ -31,7 +31,7 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
             start_config: np.ndarray,
             goal_config: np.ndarray) -> PlanResult:
         # TODO: YOUR IMPLEMENTATION HERE
-        self.control_tree[0] = (-1, (0,0))
+        # self.control_tree[0] = (-1, (0,0))
         plan_time = time.time()
 
         # Start with adding the start configuration to the tree.
@@ -56,6 +56,7 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
         costs = self.tree.costs
         plan = []
         plan_states = []
+        print(edges)
 
         start, _ = self.nearestVertex(goal_config)
         cost = costs[start]
@@ -67,9 +68,15 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
             plan.append(edges[start][1])
             start = edges[start][0]
         plan.append((0, 0))
+        plan = plan[::-1]
+        plan.append((0, 0))
+
         plan_states.append(start_config)
-        # plan = plan[::-1]
         plan_states = plan_states[::-1]
+        # print(plan_states[0].shape)
+        plan_states = np.concatenate(plan_states, axis=-1)
+        print(plan_states.shape)
+        print(plan)
         plan_time = time.time() - plan_time
         print("Cost: %f" % cost)
         print("Planning Time: %fs" % plan_time)

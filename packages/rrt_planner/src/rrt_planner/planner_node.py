@@ -69,7 +69,8 @@ class PlannerNode(DTROS):
         self.seed = 2021
 
         rospack = rospkg.RosPack()
-        self.map_path = os.path.join(rospack.get_path('rrt_planner'),"environments/mapfile.pgm")
+        # self.map_path = os.path.join(rospack.get_path('rrt_planner'),"environments/mapfile.pgm")
+        self.map_path = os.path.join(rospack.get_path('rrt_planner'),"environments/map2.png")
         # print("Intialization complete!")
 
     
@@ -79,7 +80,7 @@ class PlannerNode(DTROS):
     def plan(self, msg):
         # self.goalpose = (msg.x, msg.y, msg.theta)
         self.goalpose = (50, 50, 0)
-        self.currpose = (70, 50, 0)
+        self.currpose = (120, 50, 0)
         start = np.asarray(self.currpose).reshape((3,1))
         goal = np.asarray(self.goalpose).reshape((3,1))
 
@@ -99,7 +100,7 @@ class PlannerNode(DTROS):
         tree = self.planner.tree
         # For debugging only
         # print(plan_result_states.plan)
-        # self.planning_env.visualize_plan(plan_result_states.plan, tree, visited)
+        self.planning_env.visualize_plan(plan_result_states.plan, tree, visited)
         self.run_plan(plan_result)
         time.sleep(3)
 
@@ -115,6 +116,7 @@ class PlannerNode(DTROS):
         # print("PLAN_STATES===")
         print(plan_states)
         # print("===PLAN_STATES")
+        rate = rospy.Rate(10)
         for action in plan_states:
             # print("CURRENT ACTION===", action)
             # print(action)
@@ -126,6 +128,7 @@ class PlannerNode(DTROS):
             msg.v = linear
             msg.omega = angular
             self.control_pub.publish(msg)
+            rate.sleep()
             print("published control! %f, %f" % (linear, angular))
         # print(plan_states)
         # self.num_states = num_states

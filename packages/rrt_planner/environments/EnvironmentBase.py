@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from PIL import Image
 from rrt_planner.RRTTree import RRTTree
-
+import cv2
 
 class EnvironmentBase:
     def __init__(
@@ -25,7 +25,9 @@ class EnvironmentBase:
         # Obtain the boundary limits
         # Check if file exists
         # self.map = np.loadtxt(map_file)
-        self.map = 1 - np.asarray(Image.open(map_file)) / 254
+        # self.map = 1 - np.asarray(Image.open(map_file)) / 254
+        map_img = cv2.imread(map_file, 0)
+        self.map = 1 -  map_img/ map_img.max()
         self.map = np.rot90(self.map)
         # print(self.map.max())
         self.xlimit = [0, np.shape(self.map)[0] - 1]
