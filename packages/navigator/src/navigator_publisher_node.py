@@ -132,10 +132,10 @@ class KinematicsNode(DTROS):
 
         # Setup subscribers
         self.sub_car_cmd = rospy.Subscriber(
-            "~car_cmd",
+            # "~car_cmd",
             # TODO is this done correctly?
-            # Twist2DStamped,
             self.topic_name,
+            Twist2DStamped,
             self.car_cmd_callback
         )
         # ---
@@ -143,15 +143,25 @@ class KinematicsNode(DTROS):
 
     def get_current_configuration(self):
         return {
-            "gain": rospy.get_param('~gain'),
-            "trim": rospy.get_param('~trim'),
-            "baseline": rospy.get_param('~baseline'),
-            "radius": rospy.get_param('~radius'),
-            "k": rospy.get_param('~k'),
-            "limit": rospy.get_param('~limit'),
-            "v_max": rospy.get_param('~v_max'),
-            "omega_max": rospy.get_param('~omega_max'),
+            "gain": 1.0,
+            "trim": 0.0,
+            "baseline": 0.1,
+            "radius": 0.0318,
+            "k": 27.0,
+            "limit": 1.0,
+            "v_max": 20.0,
+            "omega_max": 8.0,
         }
+        # return {
+        #     "gain": rospy.get_param('~gain'),
+        #     "trim": rospy.get_param('~trim'),
+        #     "baseline": rospy.get_param('~baseline'),
+        #     "radius": rospy.get_param('~radius'),
+        #     "k": rospy.get_param('~k'),
+        #     "limit": rospy.get_param('~limit'),
+        #     "v_max": rospy.get_param('~v_max'),
+        #     "omega_max": rospy.get_param('~omega_max'),
+        # }
 
     def get_configuration_as_str(self) -> str:
         return json.dumps(self.get_current_configuration(), sort_keys=True, indent=4)
@@ -307,13 +317,16 @@ class KinematicsNode(DTROS):
         Returns:
             :obj:`str`: the full path to the robot-specific calibration file
         """
+        # return ""
         cali_file_folder = '/data/config/calibrations/kinematics/'
         cali_file = cali_file_folder + name + ".yaml"
+        # cali_file = '/data/config/calibrations/kinematics/default.yaml'
         return cali_file
 
 
 if __name__ == '__main__':
     # Initialize the node
+    print("STARTING NAVIGATOR NODE...")
     kinematics_node = KinematicsNode(node_name='kinematics_node')
     # Keep it spinning to keep the node alive
     rospy.spin()
