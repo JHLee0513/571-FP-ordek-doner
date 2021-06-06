@@ -31,15 +31,10 @@ class PlannerNode(DTROS):
 
         # Get vehicle name
         self.veh = rospy.get_namespace().strip("/")
-        # Get perception node for goal pose prediction
-        # print("Setting up networks....")
+        # Get perception nodes
         self.goal_pose_node = PerceptionNode('goal_classifier', camera_topic=f'/{self.veh}/goal_state_publisher/image_goal/compressed')
-
-        # Get perception node for curr pose prediction
-        # self.curr_pose_node = PerceptionNode('curr_classifier', camera_topic=f'/{self.veh}/start_state_publisher/image_start/compressed')
         self.curr_pose_node = PerceptionNode('curr_classifier')
-        # print("Networks initialized!")
-        # pose handling
+        # ROS interface
         self.goal_sub = rospy.Subscriber(
             f'/{self.veh}/goal_classifier/perception/PredictedPose',
             PredictedPose,
@@ -58,7 +53,6 @@ class PlannerNode(DTROS):
             Twist2DStamped,
             queue_size=1
         )
-        # print("ROS sub/pub intialized!")
 
         # Planning variables
         self.planning_env = None
@@ -67,20 +61,19 @@ class PlannerNode(DTROS):
         self.goalpose = (0,0,0)
         self.currpose = (50, 50, 0.273915)
         self.seed = 2021
-
         rospack = rospkg.RosPack()
         # self.map_path = os.path.join(rospack.get_path('rrt_planner'),"environments/mapfile.pgm")
         self.map_path = os.path.join(rospack.get_path('rrt_planner'),"environments/map2.png")
         # print("Intialization complete!")
 
-    
     def updatePose(self, pose):
         self.currpose = (pose.x, pose.y, pose.theta)
 
     def plan(self, msg):
         # self.goalpose = (msg.x, msg.y, msg.theta)
         self.goalpose = (50, 50, 0)
-        self.currpose = (420, 100, 0.5)
+        # self.currpose = (420, 100, 0.5)
+        self.currpose = (100, 100, 0.5)
         start = np.asarray(self.currpose).reshape((3,1))
         goal = np.asarray(self.goalpose).reshape((3,1))
 
@@ -98,30 +91,18 @@ class PlannerNode(DTROS):
         tree = None
         visited = None
         tree = self.planner.tree
-        # For debugging only
-        # print(plan_result_states.plan)
-        self.planning_env.visualize_plan(plan_result_states.plan, tree, visited)
+        # For debugging purposes
+        # self.planning_env.visualize_plan(plan_result_states.plan, tree, visited)
         self.run_plan(plan_result)
+        # Prevent constant planning compute overhead
         time.sleep(3)
 
 
     def run_plan(self, plan_result):
-        # have goal image publishing running
-        # get preidcted pose from network
-        # plan
-        # run plan
-        # Base on some criterion replan.
-        # print("RUN PLAN")
         plan_states = plan_result.plan
-        # print("PLAN_STATES===")
         print(plan_states)
-        # print("===PLAN_STATES")
         rate = rospy.Rate(10)
         for action in plan_states:
-            # print("CURRENT ACTION===", action)
-            # print(action)
-            # print("====ACTION")
-            # action = action[0]
             linear = float(action[0])
             angular = float(action[1])
             msg = Twist2DStamped()
@@ -129,16 +110,7 @@ class PlannerNode(DTROS):
             msg.omega = angular
             self.control_pub.publish(msg)
             rate.sleep()
-            print("published control! %f, %f" % (linear, angular))
-        # print(plan_states)
-        # self.num_states = num_states
-
-
-        # send motor signals along the plan
-        # after moving for x seconds, check current pose for deviation
-        # or some replanning criterion
-        # otherwise continue until termination
-        # return NotImplementedError()
+            # print("published control! %f, %f" % (linear, angular))
 
 if __name__ == '__main__':
     # Initialize the node

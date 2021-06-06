@@ -75,9 +75,6 @@ class PerceptionNode():
         This function processes received input image to predict (x,y, theta)
         pose.
         """
-
-        # print("Image received")
-
         def normalize_angle(angle):
             while angle >= np.pi:
                 angle -= 2 * np.pi
@@ -93,11 +90,9 @@ class PerceptionNode():
         input = self.transform(cv_image)
         input = input.to(self.device).unsqueeze(0)
         # run model
-        # print("model ran...")
         predicted_pose = self.model(input)[0]
         predicted_pose[2] = normalize_angle(predicted_pose[2])
         # publish output
-        # print("publishing msg...")
         message = PredictedPose()
         message.x = torch.round(predicted_pose[0] / self.x_voxel)
         message.y = torch.round(predicted_pose[1] / self.y_voxel)

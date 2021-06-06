@@ -30,8 +30,6 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
             self,
             start_config: np.ndarray,
             goal_config: np.ndarray) -> PlanResult:
-        # TODO: YOUR IMPLEMENTATION HERE
-        # self.control_tree[0] = (-1, (0,0))
         plan_time = time.time()
 
         # Start with adding the start configuration to the tree.
@@ -46,8 +44,6 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
                 k += 1
                 self.tree.AddVertex(q_new,  cost = self.tree.costs[qid] + q_new_cost)
                 self.tree.AddEdge(qid, k, control)
-                # self.control_tree[k] = (int(qid), control)
-                # print(control)
                 if (self.env.goal_criterion(q_new, goal_config)):
                     break
                 
@@ -56,7 +52,7 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
         costs = self.tree.costs
         plan = []
         plan_states = []
-        print(edges)
+        # print(edges)
 
         start, _ = self.nearestVertex(goal_config)
         cost = costs[start]
@@ -110,7 +106,6 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
             Simulate trajectories with these control samples
             Compute the closest closest trajectory and return the resulting state (and cost)
         """
-        # TODO: YOUR IMPLEMENTATION HERE
 
         x_chosen = None
         min_dist = None
