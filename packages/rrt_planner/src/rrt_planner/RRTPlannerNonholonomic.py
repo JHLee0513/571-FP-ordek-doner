@@ -14,7 +14,7 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
             self,
             planning_env: CarEnvironment,
             seed: int,
-            bias: float = 0.05,
+            bias: float = 0.20,
             max_iter: int = 10000,
             num_control_samples: int = 25):
         RRTPlannerBase.__init__(

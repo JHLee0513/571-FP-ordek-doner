@@ -71,9 +71,10 @@ class PlannerNode(DTROS):
 
     def plan(self, msg):
         # self.goalpose = (msg.x, msg.y, msg.theta)
-        self.goalpose = (50, 50, 0)
+        self.goalpose = (527, 639, 2.66) # image 781
         # self.currpose = (420, 100, 0.5)
-        self.currpose = (100, 100, 0.5)
+        # self.currpose = (867, 100, 0.54)  #image 11
+        self.currpose = (527, 100, 0.54)  #image 11
         start = np.asarray(self.currpose).reshape((3,1))
         goal = np.asarray(self.goalpose).reshape((3,1))
 
@@ -92,8 +93,8 @@ class PlannerNode(DTROS):
         visited = None
         tree = self.planner.tree
         # For debugging purposes
-        # self.planning_env.visualize_plan(plan_result_states.plan, tree, visited)
-        self.run_plan(plan_result)
+        self.planning_env.visualize_plan(plan_result_states.plan, tree, visited)
+        # self.run_plan(plan_result)
         # Prevent constant planning compute overhead
         time.sleep(3)
 
