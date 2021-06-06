@@ -27,6 +27,7 @@ class PerceptionNode():
             # node_type = NodeType.PERCEPTION
         # )
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print("Using device %s..." % self.device)
         self.node_name = node_name
         # Get vehicle name
         self.veh = rospy.get_namespace().strip("/")
@@ -75,13 +76,15 @@ class PerceptionNode():
         pose.
         """
 
+        # print("Image received")
+
         def normalize_angle(angle):
             while angle >= np.pi:
                 angle -= 2 * np.pi
             while angle <= -np.pi:
                 angle += 2 * np.pi
             return angle
-        rate = rospy.Rate(1) # 1Hz
+        rate = rospy.Rate(15) # 1Hz
         # decompress img msg
         # cv_image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='passthrough')
         np_arr = np.fromstring(img_msg.data, np.uint8)
@@ -90,16 +93,18 @@ class PerceptionNode():
         input = self.transform(cv_image)
         input = input.to(self.device).unsqueeze(0)
         # run model
+        # print("model ran...")
         predicted_pose = self.model(input)[0]
         predicted_pose[2] = normalize_angle(predicted_pose[2])
         # publish output
-
+        # print("publishing msg...")
         message = PredictedPose()
-        message.x = torch.round(predicted_pose[1] / self.x_voxel)
-        message.y = torch.round(predicted_pose[0] / self.y_voxel)
+        message.x = torch.round(predicted_pose[0] / self.x_voxel)
+        message.y = torch.round(predicted_pose[1] / self.y_voxel)
         message.theta = predicted_pose[2]
         
         self.pub.publish(message)
+        # print("message published!")
         rate.sleep()
 
 

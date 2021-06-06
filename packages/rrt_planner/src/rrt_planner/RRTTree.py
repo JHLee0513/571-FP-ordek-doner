@@ -63,10 +63,10 @@ class RRTTree:
         self.costs.append(cost)
         return vid
 
-    def AddEdge(self, sid, eid):
+    def AddEdge(self, sid, eid, control):
         """ Adds an edge in the tree.
 
             @param sid start state ID.
             @param eid end state ID.
         """
-        self.edges[eid] = sid
+        self.edges[eid] = (sid, control)

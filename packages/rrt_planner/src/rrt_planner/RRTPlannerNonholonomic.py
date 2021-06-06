@@ -45,9 +45,9 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
                 self.env.edge_validity_checker(q_near, q_new)):
                 k += 1
                 self.tree.AddVertex(q_new,  cost = self.tree.costs[qid] + q_new_cost)
-                self.tree.AddEdge(qid,k)
-                self.control_tree[k] = (int(qid), control)
-                print(control)
+                self.tree.AddEdge(qid, k, control)
+                # self.control_tree[k] = (int(qid), control)
+                # print(control)
                 if (self.env.goal_criterion(q_new, goal_config)):
                     break
                 
@@ -55,17 +55,21 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
         vertices = self.tree.vertices
         costs = self.tree.costs
         plan = []
+        plan_states = []
 
         start, _ = self.nearestVertex(goal_config)
         cost = costs[start]
         while (start != 0):
             # plan.append(vertices[start])
-            if start in self.control_tree.keys():
+            # if start in self.control_tree.keys():
                 # print(self.control_tree[start].shape)
-                plan.append(self.control_tree[start])
-            start = edges[start]
-        plan.append((start_config, (0, 0)))
-        plan = plan[::-1]
+            plan_states.append(vertices[start])
+            plan.append(edges[start][1])
+            start = edges[start][0]
+        plan.append((0, 0))
+        plan_states.append(start_config)
+        # plan = plan[::-1]
+        plan_states = plan_states[::-1]
         plan_time = time.time() - plan_time
         print("Cost: %f" % cost)
         print("Planning Time: %fs" % plan_time)
@@ -75,7 +79,14 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
             plan=plan,
             cost=cost,
             time=plan_time)
-        return plan_result
+
+        plan_state_result = PlanResult(
+            plan=plan_states,
+            cost=cost,
+            time=plan_time)
+
+
+        return plan_result, plan_state_result
         # print(plan_result)
         # return PlanResult(
             # plan=np.concatenate(plan, axis=2),

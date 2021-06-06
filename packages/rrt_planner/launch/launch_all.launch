@@ -7,7 +7,7 @@
 
     <group ns="$(arg veh)">
         <node  name="$(arg node_name3)" pkg="$(arg pkg_name)" type="$(arg node_name3).py" output="screen" required="true"/>
-        <node  name="$(arg node_name1)" pkg="$(arg pkg_name)" type="$(arg node_name1).py" output="screen" required="true"/>
+        <!-- <node  name="$(arg node_name1)" pkg="$(arg pkg_name)" type="$(arg node_name1).py" output="screen" required="true"/> -->
         <node  name="$(arg node_name2)" pkg="$(arg pkg_name)" type="$(arg node_name2).py" output="screen" required="true"/>
     </group>
 </launch>

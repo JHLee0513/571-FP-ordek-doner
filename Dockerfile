@@ -88,6 +88,8 @@ RUN dt-apt-install ${REPO_PATH}/dependencies-apt.txt
 #! install python3 dependencies
 COPY ./dependencies-py3.txt "${REPO_PATH}/"
 RUN pip3 install --use-feature=2020-resolver -r ${REPO_PATH}/dependencies-py3.txt
+RUN pip3 install torchvision
+
 
 #! install Zuper dependencies
 ARG PIP_INDEX_URL

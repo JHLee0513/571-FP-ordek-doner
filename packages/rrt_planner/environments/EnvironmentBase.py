@@ -26,9 +26,11 @@ class EnvironmentBase:
         # Check if file exists
         # self.map = np.loadtxt(map_file)
         self.map = 1 - np.asarray(Image.open(map_file)) / 254
+        self.map = np.rot90(self.map)
         # print(self.map.max())
         self.xlimit = [0, np.shape(self.map)[0] - 1]
         self.ylimit = [0, np.shape(self.map)[1] - 1]
+        # print(self.xlimit, self.ylimit)
 
         # Variables for the visualizer
         self.fig = None

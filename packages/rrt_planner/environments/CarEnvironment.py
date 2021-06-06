@@ -19,7 +19,7 @@ class CarEnvironment(EnvironmentBase):
             start: np.ndarray,
             goal: np.ndarray,
             seed: int,
-            radius=15,
+            radius=5,
             delta_step=10,
             max_linear_vel=20,
             max_steer_angle=1.):
@@ -168,6 +168,7 @@ class CarEnvironment(EnvironmentBase):
 
             @param config: a [d x n] numpy array of n states
         """
+        # print(config.shape)
         out_of_limits = np.stack([config[0, :] <= self.radius,
                                   config[0, :] >= (self.xlimit[1] - self.radius),
                                   config[1, :] <= self.radius,
@@ -204,7 +205,7 @@ class CarEnvironment(EnvironmentBase):
         """
         valid_position = ~self.collision_violation(config)
         valid_limits = ~self.out_of_limits_violation(config)
-        # print(valid_position, valid_limits)
+        # print(config, valid_position, valid_limits, self.xlimit, self.ylimit)
         return valid_position and valid_limits
 
     def plot_car(
@@ -249,7 +250,7 @@ class CarEnvironment(EnvironmentBase):
                 if idx == tree.GetRootID():
                     continue
                 econfig = tree.vertices[idx]
-                sconfig = tree.vertices[tree.edges[idx]]
+                sconfig = tree.vertices[tree.edges[idx][0]]
                 x = [sconfig[0], econfig[0]]
                 y = [sconfig[1], econfig[1]]
                 self.ax1.plot(y, x, 'r')
@@ -261,5 +262,5 @@ class CarEnvironment(EnvironmentBase):
                 plt.pause(.025)
 
         self.fig.canvas.draw()
-        plt.pause(1e-10)
-        # plt.pause(60)
+        # plt.pause(1e-10)
+        plt.pause(60)

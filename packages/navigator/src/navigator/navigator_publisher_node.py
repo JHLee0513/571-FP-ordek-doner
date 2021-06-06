@@ -61,14 +61,15 @@ class KinematicsNode(DTROS):
         self.veh_name = rospy.get_namespace().strip("/")
 
         # vehicle name hardcoded for the topic
-        self.topic_name = f"{self.veh_name}/control"
+        self.topic_name = "/control"
 
 
         # Read parameters from a robot-specific yaml file if such exists
         self.read_params_from_calibration_file()
 
         # Get static parameters
-        self._k = rospy.get_param('~k')
+        # self._k = rospy.get_param('~k')
+        self._k = 27.0
         # Get editable parameters
         self._gain = DTParam(
             '~gain',
@@ -118,25 +119,26 @@ class KinematicsNode(DTROS):
 
         # Setup publishers
         self.pub_wheels_cmd = rospy.Publisher(
-            "~wheels_cmd",
+            f"/{self.veh_name}/wheels_driver_node/wheels_cmd",
             WheelsCmdStamped,
             queue_size=1,
             dt_topic_type=TopicType.CONTROL
         )
         self.pub_velocity = rospy.Publisher(
-            "~velocity",
+            f"/{self.veh_name}/kinematics_node/velocity",
             Twist2DStamped,
             queue_size=1,
             dt_topic_type=TopicType.CONTROL
         )
+        print("topics")
+        print(f"{self.veh_name}/wheels_driver_node/wheels_cmd")
 
         # Setup subscribers
         self.sub_car_cmd = rospy.Subscriber(
-            # "~car_cmd",
-            # TODO is this done correctly?
             self.topic_name,
             Twist2DStamped,
-            self.car_cmd_callback
+            self.car_cmd_callback,
+            queue_size=1
         )
         # ---
         self.log("Initialized with: \n%s" % self.get_configuration_as_str())
@@ -177,8 +179,17 @@ class KinematicsNode(DTROS):
         # Use the default values from the config folder if a robot-specific file does not exist.
         if not os.path.isfile(fname):
             self.logwarn("Kinematics calibration %s not found! Using default instead." % fname)
+
+            # set params using hardcoded default parameters.
+            defaults = self.get_current_configuration()
+            for param_name in defaults.keys():
+                param_value = defaults[param_name]
+                if param_name is not None and param_value is not None:
+                    rospy.set_param("~"+param_name, param_value)
+
         else:
             with open(fname, 'r') as in_file:
+                # print("yaml file opened..")
                 try:
                     yaml_dict = yaml.load(in_file)
                 except yaml.YAMLError as exc:
@@ -227,7 +238,10 @@ class KinematicsNode(DTROS):
         return EmptyResponse()
 
     def car_cmd_callback(self, msg_car_cmd):
-        print("in callback")
+        print("                     in callback")
+        print("                     in callback")
+        print("                     in callback")
+        print("                     in callback")
         """
         A callback that reposponds to received `car_cmd` messages by calculating the
         corresponding wheel commands, taking into account the robot geometry, gain and trim
@@ -276,6 +290,7 @@ class KinematicsNode(DTROS):
         msg_wheels_cmd.header.stamp = msg_car_cmd.header.stamp
         msg_wheels_cmd.vel_right = u_r_limited
         msg_wheels_cmd.vel_left = u_l_limited
+        print("PUBLISHED WHEEL CMD")
         self.pub_wheels_cmd.publish(msg_wheels_cmd)
 
         # FORWARD KINEMATICS PART
