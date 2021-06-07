@@ -151,7 +151,7 @@ class KinematicsNode(DTROS):
             "radius": 0.0318,
             "k": 27.0,
             "limit": 1.0,
-            "v_max": 20.0,
+            "v_max": 1.0,
             "omega_max": 8.0,
         }
         # return {
@@ -240,6 +240,7 @@ class KinematicsNode(DTROS):
     def car_cmd_callback(self, msg_car_cmd):
         print("                     in callback")
         print("                     in callback")
+        print(msg_car_cmd.v, msg_car_cmd.omega)
         print("                     in callback")
         print("                     in callback")
         """

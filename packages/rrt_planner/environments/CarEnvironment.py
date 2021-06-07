@@ -263,4 +263,4 @@ class CarEnvironment(EnvironmentBase):
 
         self.fig.canvas.draw()
         # plt.pause(1e-10)
-        plt.pause(60)
+        plt.pause(3)

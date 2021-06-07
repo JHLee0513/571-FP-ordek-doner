@@ -94,9 +94,9 @@ class PlannerNode(DTROS):
         tree = self.planner.tree
         # For debugging purposes
         self.planning_env.visualize_plan(plan_result_states.plan, tree, visited)
-        # self.run_plan(plan_result)
+        self.run_plan(plan_result)
         # Prevent constant planning compute overhead
-        time.sleep(3)
+        time.sleep(5)
 
 
     def run_plan(self, plan_result):
@@ -104,14 +104,14 @@ class PlannerNode(DTROS):
         print(plan_states)
         rate = rospy.Rate(10)
         for action in plan_states:
-            linear = float(action[0])
-            angular = float(action[1])
+            linear = float(action[0]) * 0.02
+            angular = float(action[1]) * 8
             msg = Twist2DStamped()
             msg.v = linear
             msg.omega = angular
             self.control_pub.publish(msg)
+            print("published control! %f, %f" % (linear, angular * 8))
             rate.sleep()
-            # print("published control! %f, %f" % (linear, angular))
 
 if __name__ == '__main__':
     # Initialize the node
