@@ -37,8 +37,8 @@ class PerceptionNode():
             self.input_topic = f'/{self.veh}/camera_node/image/compressed'
         else:
             self.input_topic = camera_topic
-        self.x_voxel = 1.89/1099 #366
-        self.y_voxel = 1.26/744  #246
+        self.x_voxel = 0.01#1.89/1099 #366
+        self.y_voxel = 0.01#1.26/744  #246
         self.bridge = CvBridge()
 
         # get prediction model

@@ -8,3 +8,4 @@ numpy>=1.18.5
 cython
 ruamel.yaml
 dt-apriltags
+Ipython

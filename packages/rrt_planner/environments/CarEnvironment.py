@@ -19,10 +19,11 @@ class CarEnvironment(EnvironmentBase):
             start: np.ndarray,
             goal: np.ndarray,
             seed: int,
-            radius=5,
-            delta_step=10,
-            max_linear_vel=20,
-            max_steer_angle=1.):
+            radius= 5, #5,
+            # delta_step=20,
+            delta_step=1,
+            max_linear_vel=40,
+            max_steer_angle=4.):
         EnvironmentBase.__init__(
             self,
             map_file=map_file,
@@ -79,25 +80,51 @@ class CarEnvironment(EnvironmentBase):
         rollout = [x]
         for i in range(self.delta_step):
             x_rollout = np.zeros_like(x)
-            x_rollout[0] = x[0] + linear_vel * np.cos(x[2]) * dt
-            x_rollout[1] = x[1] + linear_vel * np.sin(x[2]) * dt
-            x_rollout[2] = x[2] + (linear_vel / L) * np.tan(steer_angle) * dt
-            x_rollout[2] = x_rollout[2] % (2 * np.pi)
+            # x_rollout[0] = x[0] + linear_vel * np.cos(x[2]) * dt
+            # x_rollout[1] = x[1] + linear_vel * np.sin(x[2]) * dt
+            # x_rollout[2] = x[2] + (linear_vel / L) * np.tan(steer_angle) * dt
+            # x_rollout[2] = x_rollout[2] % (2 * np.pi)
+            v, w = linear_vel, steer_angle
+            # print("v", v)
+            # print("w", w)
+            # print("linear v:", linear_vel)
+            # print("steer angle", steer_angle)
+            theta_delta = w * dt #+ np.random.normal(0, 0.02, size=(1))
+            theta = x[2]
 
+            if np.abs(w) < 0.000001:
+                # straight line
+                x_delta = v * dt * np.cos(theta)
+                y_delta = v * dt * np.sin(theta)
+            else:
+                # arc of circle
+                r = v / w
+                sin2 = np.sin(theta + theta_delta)
+                cos2 = np.cos(theta + theta_delta) 
+                sin_diff = sin2 - np.sin(theta)
+                cos_diff = cos2 - np.cos(theta)
+                x_delta = r * sin_diff
+                y_delta = r * (-cos_diff)
+            x_rollout[0] = x[0] + x_delta
+            x_rollout[1] = x[1] + y_delta
+            x_rollout[2] = x[2] + theta_delta
             x = x_rollout
             rollout.append(x_rollout)  # maintain history
         rollout = np.concatenate(rollout, axis=1)  # Shape: [3 x delta_step]
 
         # Find the closest point to x_rand on the rollout
         # This is x_new. Discard the rest of the rollout
+        # print("calling rollout", rollout, x_near)
         min_ind = np.argmin(self.compute_distance(rollout, x_rand))
+        # print("chosen index", min_ind)
+        min_ind = 1
         x_new = rollout[:, min_ind].reshape(3, 1)
         rollout = rollout[:, :min_ind + 1]  # don't need the rest
-        delta_t = rollout.shape[1]
-
+        delta_t = rollout.shape[1] * dt
+        # print("     Corrected xnew, delta ", x_new, delta_t)
         # Check for validity of the path
         if self.state_validity_checker(rollout):
-            return x_new, delta_t
+            return x_new, delta_t #* dt
         else:
             return None, None
 
@@ -257,9 +284,14 @@ class CarEnvironment(EnvironmentBase):
 
         if plan is not None:
             for i in range(np.shape(plan)[1]):
+                # if i == 0 or i == (np.shape(plan)[1]-2):
+                #     self.plot_car(plan[:, i:i + 1])
+                #     self.fig.canvas.draw()
+                # if (i % 2 == 0):
+                # if i < 2:
                 self.plot_car(plan[:, i:i + 1])
                 self.fig.canvas.draw()
-                plt.pause(.025)
+                plt.pause(0.01)
 
         self.fig.canvas.draw()
         # plt.pause(1e-10)

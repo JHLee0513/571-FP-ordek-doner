@@ -14,7 +14,7 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
             self,
             planning_env: CarEnvironment,
             seed: int,
-            bias: float = 0.20,
+            bias: float = 0.40,
             max_iter: int = 10000,
             num_control_samples: int = 25):
         RRTPlannerBase.__init__(
@@ -36,14 +36,16 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
         self.tree.AddVertex(start_config)
         k = 0
         for i in range(self.max_iter):
+            # print(i)
             q_rand = self.sample(goal_config)                
             qid, q_near = self.nearestVertex(q_rand)
             q_new, q_new_cost, control = self.extend(q_near, q_rand)
+            # print(q_new, q_new_cost, control)
             if (self.env.state_validity_checker(q_new) and
                 self.env.edge_validity_checker(q_near, q_new)):
                 k += 1
                 self.tree.AddVertex(q_new,  cost = self.tree.costs[qid] + q_new_cost)
-                self.tree.AddEdge(qid, k, control)
+                self.tree.AddEdge(qid, k, (control, q_new_cost))
                 if (self.env.goal_criterion(q_new, goal_config)):
                     break
                 
@@ -63,16 +65,17 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
             plan_states.append(vertices[start])
             plan.append(edges[start][1])
             start = edges[start][0]
-        plan.append((0, 0))
+        plan.append(((0, 0), 1))
         plan = plan[::-1]
-        plan.append((0, 0))
+        plan.append(((0, 0), 0.2))
+        plan.append(((0, 0), 0.2))
 
         plan_states.append(start_config)
         plan_states = plan_states[::-1]
         # print(plan_states[0].shape)
         plan_states = np.concatenate(plan_states, axis=-1)
-        print(plan_states.shape)
-        print(plan)
+        # print(plan_states.shape)
+        # print(plan)
         plan_time = time.time() - plan_time
         print("Cost: %f" % cost)
         print("Planning Time: %fs" % plan_time)
@@ -110,6 +113,9 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
         x_chosen = None
         min_dist = None
         min_cost = None
+        min_linear_vel = None
+        min_angle_vel = None
+
 
         for i in range(self.num_control_samples):
             linear_vel, steer_angle = self.env.sample_action()
@@ -120,13 +126,16 @@ class RRTPlannerNonholonomic(RRTPlannerBase):
                     x_chosen = x_new
                     min_dist = dist
                     min_cost = cost
+                    min_linear_vel = linear_vel
+                    min_angle_vel = steer_angle
                 elif min_dist > dist:
                     x_chosen = x_new
                     min_dist = dist
                     min_cost = cost
+                    min_linear_vel = linear_vel
+                    min_angle_vel = steer_angle
 
-
-        return x_chosen, min_cost, (linear_vel, steer_angle)
+        return x_chosen, min_cost, (min_linear_vel, min_angle_vel)
 
     def nearestVertex(self, config):
         vertices = np.squeeze(np.array(self.tree.vertices), axis=-1).T

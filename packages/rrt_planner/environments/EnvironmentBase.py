@@ -27,7 +27,10 @@ class EnvironmentBase:
         # self.map = np.loadtxt(map_file)
         # self.map = 1 - np.asarray(Image.open(map_file)) / 254
         map_img = cv2.imread(map_file, 0)
-        self.map = 1 -  map_img/ map_img.max()
+        map_img = cv2.resize(map_img, (189, 126))
+        map_img = np.round(map_img)
+        self.map = 1 -  np.round(map_img/ map_img.max())
+        # print(self.map[10,10], self.map[20,20])
         self.map = np.rot90(self.map)
         # print(self.map.max())
         self.xlimit = [0, np.shape(self.map)[0] - 1]

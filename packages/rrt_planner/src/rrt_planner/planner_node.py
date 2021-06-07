@@ -60,7 +60,7 @@ class PlannerNode(DTROS):
         self.planned_trajectory = None
         self.goalpose = (0,0,0)
         self.currpose = (50, 50, 0.273915)
-        self.seed = 2021
+        self.seed = 42
         rospack = rospkg.RosPack()
         # self.map_path = os.path.join(rospack.get_path('rrt_planner'),"environments/mapfile.pgm")
         self.map_path = os.path.join(rospack.get_path('rrt_planner'),"environments/map2.png")
@@ -70,11 +70,12 @@ class PlannerNode(DTROS):
         self.currpose = (pose.x, pose.y, pose.theta)
 
     def plan(self, msg):
-        # self.goalpose = (msg.x, msg.y, msg.theta)
-        self.goalpose = (527, 639, 0) # image 781
-        # self.currpose = (420, 100, 0.5)
-        # self.currpose = (867, 100, 0.54)  #image 11
-        self.currpose = (527, 100, 0)  #image 11
+        self.goalpose = (msg.x, msg.y, msg.theta)
+        # self.goalpose = (527, 639, 2.66) # image 781
+        self.currpose = (20, 20, 0.)
+        # self.goalpose = (75, 25, 0.)  #image 11
+        # self.goalpose = (150, 19, 0.27)  #image 11
+        # self.goalpose = (100, 80, 1.57)  #image 11
         start = np.asarray(self.currpose).reshape((3,1))
         goal = np.asarray(self.goalpose).reshape((3,1))
 
@@ -88,7 +89,6 @@ class PlannerNode(DTROS):
         # Plan
         plan_result, plan_result_states = self.planner.plan(start, goal)
 
-        # Visualize the final path
         tree = None
         visited = None
         tree = self.planner.tree
@@ -96,22 +96,32 @@ class PlannerNode(DTROS):
         self.planning_env.visualize_plan(plan_result_states.plan, tree, visited)
         self.run_plan(plan_result)
         # Prevent constant planning compute overhead
+        from IPython import embed; embed()
+        
         time.sleep(5)
+
 
 
     def run_plan(self, plan_result):
         plan_states = plan_result.plan
-        print(plan_states)
-        rate = rospy.Rate(10)
-        for action in plan_states:
-            linear = float(action[0]) * 0.02
-            angular = float(action[1]) * 8
+        rate = rospy.Rate(1 / 0.2)
+        # plan_states = [plan_states[1], [0,0]]
+        # plan_states = [[0,0], [0, 1], [0,0]]
+        for action_ in plan_states:
+            (action, t) = action_
+            # linear = -float(action[0]) * 0.05
+            linear = float(action[0]) / 100 * 0.8
+            # angular = float(action[1]) * 4 / 3.2 #8#12
+            angular = float(action[1]) * 1.5
+            # if angular != 0:
+            #     angular -= 1
             msg = Twist2DStamped()
             msg.v = linear
             msg.omega = angular
             self.control_pub.publish(msg)
-            print("published control! %f, %f" % (linear, angular * 8))
+            print("published control! %f, %f" % (linear, angular))
             rate.sleep()
+            # time.sleep(t)
 
 if __name__ == '__main__':
     # Initialize the node
