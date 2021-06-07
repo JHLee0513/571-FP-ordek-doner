@@ -71,10 +71,10 @@ class PlannerNode(DTROS):
 
     def plan(self, msg):
         # self.goalpose = (msg.x, msg.y, msg.theta)
-        self.goalpose = (527, 639, 2.66) # image 781
+        self.goalpose = (527, 639, 0) # image 781
         # self.currpose = (420, 100, 0.5)
         # self.currpose = (867, 100, 0.54)  #image 11
-        self.currpose = (527, 100, 0.54)  #image 11
+        self.currpose = (527, 100, 0)  #image 11
         start = np.asarray(self.currpose).reshape((3,1))
         goal = np.asarray(self.goalpose).reshape((3,1))
 
