@@ -14,7 +14,7 @@ dt-launchfile-init
 
 # launching app
 dt-exec roslaunch rrt_planner launch_all.launch veh:=$VEHICLE_NAME
-dt-exec roslaunch navigator navigator_launch.launch veh:=$VEHICLE_NAME
+# dt-exec roslaunch navigator navigator_launch.launch veh:=$VEHICLE_NAME
 # dt-exec roslaunch rrt_planner planner_node.launch veh:=$VEHICLE_NAME
 # dt-exec roslaunch rrt_planner goal_state_publisher.launch veh:=$VEHICLE_NAME
 # dt-exec roslaunch rrt_planner start_state_publisher.launch veh:=$VEHICLE_NAME
